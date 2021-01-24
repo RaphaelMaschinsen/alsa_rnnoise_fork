@@ -1,0 +1,5 @@
+option('plugin_dir',
+	type: 'string',
+	description: 'ALSA plugin directory location',
+	value: ''
+)

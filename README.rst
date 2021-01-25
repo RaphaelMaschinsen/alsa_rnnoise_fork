@@ -1,9 +1,14 @@
 ============
 alsa_rnnoise
 ============
+|builds.sr.ht status|
+
 RNNoise_ based noise removal plugin for ALSA
 
+
 .. _RNNoise: https://gitlab.xiph.org/xiph/rnnoise/
+.. |builds.sr.ht status| image:: https://builds.sr.ht/~arsen/alsa_rnnoise/commits/debian.yml.svg
+   :target: https://builds.sr.ht/~arsen/alsa_rnnoise/commits/debian.yml?
 
 Building
 --------

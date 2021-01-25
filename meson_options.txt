@@ -5,7 +5,6 @@ option('plugin_dir',
 )
 option('static_rnnoise',
 	type: 'boolean',
-	description: 'Whether to static link RNNoise'
-		+ '(default: true due to lack of stable releases)',
+	description: 'Whether to static link RNNoise',
 	value: true
 )

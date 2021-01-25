@@ -27,6 +27,7 @@ endif
 
 summary({
 	'plugin directory': pdir,
+	'statically link rnnoise': static_rnnoise,
 	'rnnoise_get_frame_size() detected?': has_frame_func
 }, section: 'build configuration')
 

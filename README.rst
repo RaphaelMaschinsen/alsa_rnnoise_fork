@@ -32,6 +32,9 @@ invocation.
 ``plugin_dir``
     ALSA plugin directory location, usually ``/usr/lib/alsa-lib``.
     Depends on ALSA build time configuration
+``static_rnnoise``
+    Whether to static link RNNoise.
+    Enabled by default since RNNoise lacks stable releases.
 
 Usage
 -----

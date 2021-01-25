@@ -1,14 +1,22 @@
 project('alsa_rnnoise', 'c')
+cc = meson.get_compiler('c')
 
-rnnoise = dependency('rnnoise')
+static_rnnoise = get_option('static_rnnoise')
+pdir = get_option('plugin_dir')
+
+libm = dependency('', required: false)
+rnnoise = dependency('rnnoise', static: static_rnnoise)
 alsa = dependency('alsa')
 
-pdir = get_option('plugin_dir')
+if static_rnnoise
+	# the rnnoise .pc does not declare this dep
+	libm = cc.find_library('m', required: false)
+endif
+
 if pdir == ''
 	pdir = get_option('prefix') / get_option('libdir') / 'alsa-lib'
 endif
 
-cc = meson.get_compiler('c')
 has_frame_func = cc.has_function('rnnoise_get_frame_size',
 				prefix: '#include <rnnoise.h>',
 				dependencies: rnnoise)
@@ -24,7 +32,7 @@ summary({
 
 shared_library('asound_module_pcm_rnnoise',
 	'src/main.c',
-	dependencies: [rnnoise, alsa],
+	dependencies: [rnnoise, alsa, libm],
 	install_dir: pdir,
 	c_args: ['-DPIC'],
 	install: true)

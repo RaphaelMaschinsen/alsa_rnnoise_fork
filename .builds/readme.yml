@@ -1,0 +1,35 @@
+image: alpine/latest
+packages:
+  - py3-pip
+  - jq
+  - curl
+sources:
+  - https://git.sr.ht/~arsen/alsa_rnnoise
+secrets:
+  - 51121cdf-dcb7-43c9-bea8-98b8782b0032
+tasks:
+  - get_renderer: |
+      pip3 install --user readme_renderer
+  - render_page: |
+      export PATH="$HOME/.local/bin:$PATH"
+      (
+          cd alsa_rnnoise
+          echo '<h1>alsa_rnnoise</h1>'
+          python3 -m readme_renderer README.rst
+      ) > README.html
+      set +x
+      bearer_token="$(cat ~/.readme_builder)"
+      jq -R '{
+        "query": "mutation UpdateRepo($id: Int!, $readme: String!) {
+          updateRepository(id: $id, input: { readme: $readme }) { id }
+        }", "variables": {
+          "id": '41328',
+          "readme": .
+        } }' < 'README.html' \
+      | curl --oauth2-bearer "$bearer_token" \
+             -H "Content-Type: application/json" \
+             -d@- https://git.sr.ht/query
+artifacts:
+  - README.html
+
+# vim: sw=4 :

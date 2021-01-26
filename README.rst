@@ -5,8 +5,14 @@ alsa_rnnoise
 
 RNNoise_ based noise removal plugin for ALSA
 
+alsa_rnnoise provides ALSA with a high-performance denoiser in real-time,
+perfect for VoIP conferences and calls, streaming, screencasting, and chatting
+with friends. To hear a demo of RNNoise_ in action, on your voice or a voice
+sample, see `this page`_.
+
 
 .. _RNNoise: https://gitlab.xiph.org/xiph/rnnoise/
+.. _`this page`: https://jmvalin.ca/demo/rnnoise/
 .. |builds.sr.ht status| image:: https://builds.sr.ht/~arsen/alsa_rnnoise/commits/debian.yml.svg
    :target: https://builds.sr.ht/~arsen/alsa_rnnoise/commits/debian.yml?
 

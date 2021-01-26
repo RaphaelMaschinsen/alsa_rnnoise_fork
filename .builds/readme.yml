@@ -19,7 +19,7 @@ tasks:
       ) > README.html
       set +x
       bearer_token="$(cat ~/.readme_builder)"
-      jq -R '{
+      jq -sR '{
         "query": "mutation UpdateRepo($id: Int!, $readme: String!) {
           updateRepository(id: $id, input: { readme: $readme }) { id }
         }", "variables": {

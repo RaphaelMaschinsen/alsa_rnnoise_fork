@@ -29,5 +29,9 @@ tasks:
       ninja -C build
 artifacts:
   - alsa_rnnoise/build/libasound_module_pcm_rnnoise.so
+triggers:
+  - action: email
+    condition: failure
+    to: arsen@aarsen.me
 
 # vim: sw=4 :

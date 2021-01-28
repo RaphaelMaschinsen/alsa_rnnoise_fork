@@ -31,5 +31,9 @@ tasks:
              -d@- https://git.sr.ht/query
 artifacts:
   - README.html
+triggers:
+  - action: email
+    condition: failure
+    to: arsen@aarsen.me
 
 # vim: sw=4 :

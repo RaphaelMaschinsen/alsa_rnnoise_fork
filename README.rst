@@ -49,11 +49,19 @@ invocation.
 
 Usage
 -----
-The plugin has no settings other than the slave PCM. There is currently a
-known bug where if something requests to know the accepted sample rate
-interval, the plugin reports an empty interval. Please make sure to specify the
-sample rate as exactly ``48000`` as seen in the ``rnnoise`` PCM below. I'm
-currently not aware of a way to fix this with ALSAs external plugin API.
+The plugin defines the following options:
+
+``wet_dry_control``
+    How much of the original audio to mix into the resulting denoised signal,
+    range [0, 1], where 0 means none and 1 means all. The loudness of the audio
+    should be preserved, but this may affect how nice your recordings sound,
+    in terms of comfort noise and speech quality.
+
+There is currently a known bug where if something requests to know the accepted
+sample rate interval, the plugin reports an empty interval. Please make sure to
+specify the sample rate as exactly ``48000`` as seen in the ``rnnoise`` PCM
+below. I'm currently not aware of a way to fix this with ALSAs external plugin
+API.
 
 .. code-block::
 
@@ -80,3 +88,5 @@ License
 -------
 ``alsa_rnnoise`` is Free software licensed under the GNU General Public
 License, version 3.
+
+.. vim: et sw=4 :

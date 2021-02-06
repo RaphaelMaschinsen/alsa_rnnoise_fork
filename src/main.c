@@ -26,9 +26,14 @@ static inline int rnnoise_get_frame_size() {
 
 typedef struct {
 	snd_pcm_extplug_t ext;
+	/* instance and intermedate buffer */
 	DenoiseState *rnnoise;
 
+	/* factor of original audio to let through mixed with filtered audio */
+	double wet_dry_factor;
+
 	float *buf;
+	float *srcbuf;
 	size_t filled;
 } alsa_rnnoise_info;
 
@@ -71,6 +76,10 @@ arnn_transfer(
 		}
 		dst += chunk;
 
+		for (size_t i = 0; i < chunk; i++) {
+			pdata->buf[pdata->filled + i] = src[i];
+			pdata->srcbuf[pdata->filled + i] = src[i];
+		}
 		pdata->filled += chunk;
 
 		src += chunk;
@@ -81,22 +90,45 @@ arnn_transfer(
 		}
 		rnnoise_process_frame(pdata->rnnoise, pdata->buf, pdata->buf);
 		pdata->filled = 0;
+
+		if (pdata->wet_dry_factor == 0) {
+			continue;
+		}
+
+		for (size_t i = 0; i < rnnoise_get_frame_size(); i++) {
+			pdata->buf[i] *= 1 - pdata->wet_dry_factor;
+			pdata->buf[i] += pdata->wet_dry_factor
+					* pdata->srcbuf[i];
+		}
 	}
 
 	return size;
 }
 
+static int arnn_init_buf(float **buf, size_t s) {
+	*buf = realloc(*buf, s * sizeof(float));
+	if (!*buf) {
+		return -ENOMEM;
+	}
+	memset(*buf, 0, s * sizeof(float));
+	return 0;
+}
+
 static int arnn_init(snd_pcm_extplug_t *ext) {
 	alsa_rnnoise_info *pdata = ext->private_data;
+	int r;
 
 	pdata->filled = 0;
 
-	pdata->buf = realloc(pdata->buf,
-			rnnoise_get_frame_size() * sizeof(float));
-	if (!pdata->buf) {
-		return -ENOMEM;
+	r = arnn_init_buf(&pdata->buf, rnnoise_get_frame_size());
+	if (r) {
+		return r;
 	}
-	memset(pdata->buf, 0, rnnoise_get_frame_size() * sizeof(float));
+
+	r = arnn_init_buf(&pdata->srcbuf, rnnoise_get_frame_size());
+	if (r) {
+		return r;
+	}
 
 	if (pdata->rnnoise) {
 		rnnoise_destroy(pdata->rnnoise);
@@ -112,6 +144,7 @@ static int arnn_init(snd_pcm_extplug_t *ext) {
 static int arnn_close(snd_pcm_extplug_t *ext) {
 	alsa_rnnoise_info *pdata = ext->private_data;
 	free(pdata->buf);
+	free(pdata->srcbuf);
 	/* rnnoise_destroy does not null check */
 	if (pdata->rnnoise) {
 		rnnoise_destroy(pdata->rnnoise);
@@ -131,6 +164,11 @@ SND_PCM_PLUGIN_DEFINE_FUNC(rnnoise) {
 	snd_config_t *slave = NULL;
 	int err;
 
+	arnn = calloc(1, sizeof(*arnn));
+	if (!arnn) {
+		return -ENOMEM;
+	}
+
 	snd_config_for_each(i, next, conf) {
 		snd_config_t *n = snd_config_iterator_entry(i);
 		const char *id;
@@ -144,6 +182,19 @@ SND_PCM_PLUGIN_DEFINE_FUNC(rnnoise) {
 			slave = n;
 			continue;
 		}
+		if (strcmp(id, "wet_dry_factor") == 0) {
+			int r = snd_config_get_ireal(n, &arnn->wet_dry_factor);
+			if (r >= 0) {
+				continue;
+			}
+			if (arnn->wet_dry_factor > 1
+				|| arnn->wet_dry_factor < 0) {
+				SNDERR("wet_dry_factor out of range [0, 1]");
+				return -EINVAL;
+			}
+			SNDERR("expected double for wet_dry_factor");
+			return -EINVAL;
+		}
 		SNDERR("unknown field %s", id);
 		return -EINVAL;
 	}
@@ -151,11 +202,6 @@ SND_PCM_PLUGIN_DEFINE_FUNC(rnnoise) {
 	if (!slave) {
 		SNDERR("no slave configuration for rnnoise pcm");
 		return -EINVAL;
-	}
-
-	arnn = calloc(1, sizeof(*arnn));
-	if (!arnn) {
-		return -ENOMEM;
 	}
 
 	arnn->ext.version = SND_PCM_EXTPLUG_VERSION;

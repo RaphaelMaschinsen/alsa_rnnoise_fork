@@ -65,23 +65,16 @@ API.
 
 .. code-block::
 
-    pcm.urnnoise {
-        type rnnoise
-        slave.pcm "sysdefault"
-    }
-
-    pcm.rnnoise {
-        type plug
-        slave {
-            rate 48000
-            pcm "urnnoise"
-        }
-    }
-
     pcm.!default {
         type asym
         playback.pcm "cards.pcm.default"
-        capture.pcm "rnnoise"
+        capture.pcm "plug:rnnoise"
+        # there is a short way to add the wet/dry (and other args):
+        #     capture.pcm "plug:\"rnnoise:sysdefault,0.5\""
+        # without the plug wrapper this becomes ``rnnoise:slave,wetdry'', both
+        # of the arguments are optional
+        # this is provided by 60-rnnoise.conf, takes two args: slave, wet_dry
+        # see 60-rnnoise.conf for the default values
     }
 
 License

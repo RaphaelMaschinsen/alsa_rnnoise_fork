@@ -56,8 +56,8 @@ arnn_transfer(
 	snd_pcm_uframes_t size
 ) {
 	alsa_rnnoise_info *pdata = ext->private_data;
-	int16_t *src = area_start_address(src_area, src_offset);
-	int16_t *dst = area_start_address(dst_area, dst_offset);
+	float *src = area_start_address(src_area, src_offset);
+	float *dst = area_start_address(dst_area, dst_offset);
 	size_t count = size;
 
 	/* this is pretty much the algorithm in pcm_speex.c in alsa-plugins
@@ -71,7 +71,7 @@ arnn_transfer(
 		}
 
 		for (size_t i = 0; i < chunk; i++) {
-			dst[i] = pdata->buf[pdata->filled + i];
+			dst[i] = pdata->buf[pdata->filled + i] / 32768;
 			pdata->buf[pdata->filled + i] = src[i];
 		}
 		dst += chunk;
@@ -88,6 +88,11 @@ arnn_transfer(
 		if (pdata->filled != rnnoise_get_frame_size()) {
 			continue;
 		}
+
+		for (size_t i = 0; i < rnnoise_get_frame_size(); i++) {
+			pdata->buf[i] *= 32768;
+		}
+
 		rnnoise_process_frame(pdata->rnnoise, pdata->buf, pdata->buf);
 		pdata->filled = 0;
 
@@ -225,9 +230,9 @@ SND_PCM_PLUGIN_DEFINE_FUNC(rnnoise) {
 	 * and convert to floats in the transfer function
 	 */
 	snd_pcm_extplug_set_param(&arnn->ext, SND_PCM_EXTPLUG_HW_FORMAT,
-				  SND_PCM_FORMAT_S16);
+				  SND_PCM_FORMAT_FLOAT);
 	snd_pcm_extplug_set_slave_param(&arnn->ext, SND_PCM_EXTPLUG_HW_FORMAT,
-					SND_PCM_FORMAT_S16);
+					SND_PCM_FORMAT_FLOAT);
 
 	*pcmp = arnn->ext.pcm;
 	return 0;

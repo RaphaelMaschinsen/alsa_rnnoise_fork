@@ -24,6 +24,9 @@ You can get development files for ALSA through a package called
 ``media-libs/alsa-lib`` on Gentoo. RNNoise_ might require manual installation,
 since it is not packaged by many distributions. See the RNNoise README_
 
+Please configure RNNoise with ``--prefix=/usr``, or configure
+``PKG_CONFIG_PATH`` to include the right path for your prefix.
+
 After installing RNNoise and ALSA, building ``alsa_rnnoise`` is a standard
 meson process:
 

@@ -1,4 +1,4 @@
-project('alsa_rnnoise', 'c')
+project('alsa_rnnoise', 'c', version: '1.0')
 cc = meson.get_compiler('c')
 
 static_rnnoise = get_option('static_rnnoise')

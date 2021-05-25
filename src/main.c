@@ -24,7 +24,7 @@ static inline int rnnoise_get_frame_size() {
 }
 #endif
 
-typedef struct {
+struct alsa_rnnoise_info {
 	snd_pcm_extplug_t ext;
 	/* instance and intermedate buffer */
 	DenoiseState *rnnoise;
@@ -35,7 +35,7 @@ typedef struct {
 	float *buf;
 	float *srcbuf;
 	size_t filled;
-} alsa_rnnoise_info;
+};
 
 static void *area_start_address(
 	const snd_pcm_channel_area_t *area,
@@ -55,7 +55,7 @@ arnn_transfer(
 	snd_pcm_uframes_t src_offset,
 	snd_pcm_uframes_t size
 ) {
-	alsa_rnnoise_info *pdata = ext->private_data;
+	struct alsa_rnnoise_info *pdata = ext->private_data;
 	float *src = area_start_address(src_area, src_offset);
 	float *dst = area_start_address(dst_area, dst_offset);
 	size_t count = size;
@@ -120,7 +120,7 @@ static int arnn_init_buf(float **buf, size_t s) {
 }
 
 static int arnn_init(snd_pcm_extplug_t *ext) {
-	alsa_rnnoise_info *pdata = ext->private_data;
+	struct alsa_rnnoise_info *pdata = ext->private_data;
 	int r;
 
 	pdata->filled = 0;
@@ -147,7 +147,7 @@ static int arnn_init(snd_pcm_extplug_t *ext) {
 }
 
 static int arnn_close(snd_pcm_extplug_t *ext) {
-	alsa_rnnoise_info *pdata = ext->private_data;
+	struct alsa_rnnoise_info *pdata = ext->private_data;
 	free(pdata->buf);
 	free(pdata->srcbuf);
 	/* rnnoise_destroy does not null check */
@@ -165,7 +165,7 @@ static const snd_pcm_extplug_callback_t rnnoise_callback = {
 
 SND_PCM_PLUGIN_DEFINE_FUNC(rnnoise) {
 	snd_config_iterator_t i, next;
-	alsa_rnnoise_info *arnn;
+	struct alsa_rnnoise_info *arnn;
 	snd_config_t *slave = NULL;
 	int err;
 

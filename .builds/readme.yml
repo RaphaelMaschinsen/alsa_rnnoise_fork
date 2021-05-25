@@ -5,8 +5,7 @@ packages:
   - curl
 sources:
   - https://git.sr.ht/~arsen/alsa_rnnoise
-secrets:
-  - 51121cdf-dcb7-43c9-bea8-98b8782b0032
+oauth: git.sr.ht/REPOSITORIES:RW
 tasks:
   - get_renderer: |
       pip3 install --user readme_renderer
@@ -17,8 +16,6 @@ tasks:
           echo '<h1>alsa_rnnoise</h1>'
           python3 -m readme_renderer README.rst
       ) > README.html
-      set +x
-      bearer_token="$(cat ~/.readme_builder)"
       jq -sR '{
         "query": "mutation UpdateRepo($id: Int!, $readme: String!) {
           updateRepository(id: $id, input: { readme: $readme }) { id }
@@ -26,9 +23,8 @@ tasks:
           "id": '41328',
           "readme": .
         } }' < 'README.html' \
-      | curl --oauth2-bearer "$bearer_token" \
-             -H "Content-Type: application/json" \
-             -d@- https://git.sr.ht/query
+      | acurl -H "Content-Type: application/json" \
+              -d@- https://git.sr.ht/query
 artifacts:
   - README.html
 triggers:

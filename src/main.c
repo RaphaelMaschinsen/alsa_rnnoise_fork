@@ -17,7 +17,7 @@
 #include <alsa/pcm_external.h>
 #include <rnnoise.h>
 
-#ifdef DNO_RNNOISE_GET_FRAME_SIZE
+#ifdef NO_RNNOISE_GET_FRAME_SIZE
 /* backwards compat with older rnnoise revisions */
 static inline int rnnoise_get_frame_size() {
 	return 480;

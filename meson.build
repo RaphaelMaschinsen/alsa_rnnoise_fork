@@ -25,7 +25,7 @@ endif
 
 has_frame_func = cc.has_function('rnnoise_get_frame_size',
 				prefix: '#include <rnnoise.h>',
-				dependencies: rnnoise)
+				dependencies: [rnnoise, libm])
 
 if not has_frame_func
 	add_project_arguments('-DNO_RNNOISE_GET_FRAME_SIZE', language: 'c')
